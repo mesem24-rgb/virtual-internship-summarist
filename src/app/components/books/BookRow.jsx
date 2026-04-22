@@ -2,6 +2,13 @@
 
 import BookCard from "@/app/components/books/BookCard";
 
+/**
+ * @param {{
+ *  title: string,
+ *  subtitle?: string,
+ *  books?: any[]
+ * }} props
+ */
 const BookRow = ({ title, subtitle, books = [] }) => {
   return (
     <section className="book-row">
