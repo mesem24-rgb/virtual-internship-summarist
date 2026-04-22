@@ -4,6 +4,11 @@ import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import BookCard from "@/app/components/books/BookCard";
 
+/**
+ * @param {{
+ *  books?: any[]
+ * }} props
+ */
 const SearchClient = ({ books = [] }) => {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
