@@ -1,17 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import AppShell from "@/app/components/AppShell";
 import SelectedBook from "@/app/components/books/SelectedBook";
 import BookRow from "@/app/components/books/BookRow";
 import { fetchSelectedBook, fetchBooks } from "@/lib/books";
 import { useAuth } from "@/app/context/AuthContext";
-import { useState } from "react";
 
 export default function ForYouPage() {
-  const router = useRouter();
-  const { user, isHydrated } = useAuth();
+  const { user, isHydrated, openAuth } = useAuth();
 
   const [selectedBook, setSelectedBook] = useState(null);
   const [recommendedBooks, setRecommendedBooks] = useState([]);
@@ -22,7 +19,7 @@ export default function ForYouPage() {
     if (!isHydrated) return;
 
     if (!user) {
-      router.replace("/");
+      setLoading(false);
       return;
     }
 
@@ -45,10 +42,21 @@ export default function ForYouPage() {
     };
 
     loadBooks();
-  }, [user, isHydrated, router]);
+  }, [user, isHydrated]);
 
   if (!isHydrated) return null;
-  if (!user) return null;
+
+  if (!user) {
+    return (
+      <AppShell>
+        <main style={{ padding: "32px" }}>
+          <h1>Please sign in</h1>
+          <p>You need to be logged in to view this page.</p>
+          <button onClick={() => openAuth("/for-you")}>Sign in</button>
+        </main>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>

@@ -6,21 +6,39 @@ const AuthContext = createContext(undefined);
 
 const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
 const STORAGE_KEY = "summarist-user";
+const DEFAULT_ROUTE = "/for-you";
 
 export const AuthProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [pendingRoute, setPendingRoute] = useState("/for-you");
+  const [pendingRoute, setPendingRoute] = useState(DEFAULT_ROUTE);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     try {
       const savedUser = localStorage.getItem(STORAGE_KEY);
+
       if (savedUser) {
         setUser(JSON.parse(savedUser));
+      } else {
+        const guestUser = {
+          email: "guest@gmail.com",
+          isGuest: true,
+        };
+
+        setUser(guestUser);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(guestUser));
       }
     } catch (error) {
       console.error("Failed to load saved user", error);
+
+      const guestUser = {
+        email: "guest@gmail.com",
+        isGuest: true,
+      };
+
+      setUser(guestUser);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(guestUser));
     } finally {
       setIsHydrated(true);
     }
@@ -34,10 +52,18 @@ export const AuthProvider = ({ children }) => {
   const clearUser = () => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+
+    const guestUser = {
+      email: "guest@gmail.com",
+      isGuest: true,
+    };
+
+    setUser(guestUser);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(guestUser));
   };
 
-  const openAuth = (route = "/for-you") => {
-    const safeRoute = typeof route === "string" ? route : "/for-you";
+  const openAuth = (route = DEFAULT_ROUTE) => {
+    const safeRoute = typeof route === "string" ? route : DEFAULT_ROUTE;
     setPendingRoute(safeRoute);
     setIsOpen(true);
   };
@@ -99,6 +125,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     clearUser();
+    closeAuth();
   };
 
   return (
