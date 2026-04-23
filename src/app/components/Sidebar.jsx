@@ -19,7 +19,7 @@ import {
 const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { user, logout, openAuth } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [fontSize, setFontSize] = useState("md");
 
@@ -62,8 +62,13 @@ const Sidebar = () => {
     };
   }, [menuOpen]);
 
+
   const handleLogout = () => {
-    logout();
+    if (user) {
+      logout();
+    } else {
+      openAuth();
+    }
     setMenuOpen(false);
     router.push("/");
   };

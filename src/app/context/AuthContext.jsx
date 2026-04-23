@@ -1,15 +1,40 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-const AuthContext = createContext();
+const AuthContext = createContext(undefined);
 
 const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
+const STORAGE_KEY = "summarist-user";
 
 export const AuthProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [pendingRoute, setPendingRoute] = useState("/for-you");
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedUser = localStorage.getItem(STORAGE_KEY);
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (error) {
+      console.error("Failed to load saved user", error);
+    } finally {
+      setIsHydrated(true);
+    }
+  }, []);
+
+  const saveUser = (userData) => {
+    setUser(userData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+  };
+
+  const clearUser = () => {
+    setUser(null);
+    localStorage.removeItem(STORAGE_KEY);
+  };
 
   const openAuth = (route = "/for-you") => {
     const safeRoute = typeof route === "string" ? route : "/for-you";
@@ -32,7 +57,7 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: "User not found" };
     }
 
-    setUser({
+    saveUser({
       email,
       isGuest: false,
     });
@@ -53,7 +78,7 @@ export const AuthProvider = ({ children }) => {
       };
     }
 
-    setUser({
+    saveUser({
       email,
       isGuest: false,
     });
@@ -63,7 +88,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const guestLogin = () => {
-    setUser({
+    saveUser({
       email: "guest@gmail.com",
       isGuest: true,
     });
@@ -72,7 +97,9 @@ export const AuthProvider = ({ children }) => {
     return { success: true };
   };
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    clearUser();
+  };
 
   return (
     <AuthContext.Provider
@@ -86,6 +113,7 @@ export const AuthProvider = ({ children }) => {
         guestLogin,
         logout,
         pendingRoute,
+        isHydrated,
       }}
     >
       {children}
@@ -93,4 +121,12 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+
+  return context;
+};
