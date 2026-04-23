@@ -1,5 +1,5 @@
-import LandingPage from "@/app/components/LandingPage";
+import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  return <LandingPage />;
+export default function Home() {
+  redirect("/for-you");
 }
